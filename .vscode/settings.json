@@ -1,0 +1,11 @@
+{
+    "files.associations": {
+        "stdio.h": "c",
+        "mpi.h": "c",
+        "iomanip": "cpp",
+        "cstdlib": "cpp",
+        "ctime": "cpp",
+        "iostream": "cpp",
+        "stdlib.h": "c"
+    }
+}
