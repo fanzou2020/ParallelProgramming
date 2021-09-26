@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 
 void srandom(unsigned seed);
 double dboard(int darts);
@@ -16,19 +17,32 @@ int main(int argc, char *argv[])
     int	    taskid,	        /* task ID - also used as seed number */
             numtasks,       /* number of tasks */
             rc,             /* return code */
+            n,              
             i;
+
+    if (argc != 2) {
+        printf("Usage: ./<program name> n. The computational work is equal of n tasks of parallel version.\n");
+    } else {
+        n = atoi(argv[1]);
+    }
+
+    clock_t start_time = clock();
     
     /* Set seed for random number generator with seed */
     srandom(1);
 
     avepi = 0;
-    for (i = 0; i < ROUNDS; i++) {
+    for (i = 0; i < ROUNDS * n; i++) {
         /* Calculate pi using dartboard algorithm */
         pi = dboard(DARTS);
         avepi = ((avepi * i) + pi) / (i + 1);
-        printf("    After %8d throws, average value of pi = %10.8f\n",
-                (DARTS * (i + 1)), avepi);
+        // printf("    After %8d throws, average value of pi = %10.8f\n",
+        //         (DARTS * (i + 1)), avepi);
     }
+
+    clock_t end_time = clock();
+    double execution_time = (double)(end_time - start_time) / CLOCKS_PER_SEC;    
+    printf("Serial execution time is %f\n", execution_time);
     return 0;
 
 }

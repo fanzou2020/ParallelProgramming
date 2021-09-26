@@ -35,11 +35,14 @@ int	taskid,	        /* task ID - also used as seed number */
 	i;
 MPI_Status status;
 
+
 /* Obtain number of tasks and task ID */
 MPI_Init(&argc,&argv);
 MPI_Comm_size(MPI_COMM_WORLD,&numtasks);
 MPI_Comm_rank(MPI_COMM_WORLD,&taskid);
 printf ("MPI task %d has started...\n", taskid);
+
+double start_time = MPI_Wtime();
 
 /* Set seed for random number generator equal to task ID */
 srandom (taskid);
@@ -75,7 +78,12 @@ for (i = 0; i < ROUNDS; i++) {
 if (taskid == MASTER) 
    printf ("\nReal value of PI: 3.1415926535897 \n");
 
+double end_time = MPI_Wtime();
+double execution_time = end_time - start_time;
+printf("Parallel execution time %f in task %d\n", execution_time, taskid);
+
 MPI_Finalize();
+
 return 0;
 }
 
