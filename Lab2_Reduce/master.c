@@ -42,6 +42,7 @@ int main (int argc, char *argv[])
                                                               //MPI_COMM_SELF : Each parent spawns own process
     MPI_Comm_spawn( "child", argv, numChildren, MPI_INFO_NULL, 0, MPI_COMM_SELF, &childComm, MPI_ERRCODES_IGNORE );
 
+    // processId = 10;
     MPI_Reduce(&processId, &sum, 1, MPI_INT, MPI_SUM,MPI_ROOT, childComm);  //Specifies child communicator as comm....USE MPI_ROOT (VERY IMPORTANT)
 	 
     MPI_Finalize();
