@@ -71,8 +71,8 @@ for (i = 0; i < ROUNDS; i++) {
    if (taskid == MASTER) {
       pi = pisum/numtasks;
       avepi = ((avepi * i) + pi)/(i + 1); 
-      printf("   After %8d throws, average value of pi = %10.8f\n",
-              (DARTS * (i + 1)),avepi);
+      //printf("   After %8d throws, average value of pi = %10.8f\n",
+      //        (DARTS * (i + 1)),avepi);
    }    
 } 
 if (taskid == MASTER) 
