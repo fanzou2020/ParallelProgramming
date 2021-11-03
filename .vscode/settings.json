@@ -6,6 +6,10 @@
         "cstdlib": "cpp",
         "ctime": "cpp",
         "iostream": "cpp",
-        "stdlib.h": "c"
+        "stdlib.h": "c",
+        "complex": "cpp",
+        "cmath": "cpp",
+        "ostream": "cpp",
+        "chrono": "cpp"
     }
 }

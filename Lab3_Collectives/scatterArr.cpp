@@ -38,14 +38,14 @@ int main ( int argc, char *argv[] ) {
 
   MPI_Comm_rank ( MPI_COMM_WORLD, &id );
 
-  int mainArr[count*numProcesses]; //Static Allocation in this example
+  int mainArr[count*numProcesses - 1]; //Static Allocation in this example
 
 
 //Process 0 populates array and scatters it to others including itself.
 
   if(id==masterProcess){
 
-     for(int i=0;i<count*numProcesses;i++){
+     for(int i=0;i<count*numProcesses-1;i++){
 	  mainArr[i]= i;
      }
   }
