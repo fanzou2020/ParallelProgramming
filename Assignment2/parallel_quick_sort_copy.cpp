@@ -6,10 +6,10 @@
 #include "mpi.h"
 
 // how many number to be sorted
-#define N 100
+#define N 10000
 
 // max value of the numbers
-#define MAX_VALUE 1000
+#define MAX_VALUE 10000
 
 using namespace std;
 
@@ -31,7 +31,7 @@ int main( int argc, char* argv[] ) {
     int numProcesses;
 
     int masterProcess = 0;
-
+    
     // Initialize MPI
     MPI_Init(&argc, &argv);
 
@@ -40,6 +40,8 @@ int main( int argc, char* argv[] ) {
 
     // Get the individual process ID
     MPI_Comm_rank(MPI_COMM_WORLD, &id);
+
+    double start_time = MPI_Wtime();
 
     // if number of processes is not a power of 2, then exit program and print message
     // we want to simulate the hypercube topology in cluster
@@ -79,11 +81,6 @@ int main( int argc, char* argv[] ) {
     // root process generate N numbers and scatter them to numProcesses processes
     if (id == 0) {
 
-        // for (int j = 0; j < numProcesses; j++) {
-        //     cout << "counts " << j << " = " << counts[j] << endl;
-        //     cout << "displacements " << j << " = " << displacements[j] << endl;
-        // }
-
         // genereate array with N random numbers
         int a[N];
         for (int i = 0; i < N; i++) {
@@ -93,21 +90,25 @@ int main( int argc, char* argv[] ) {
 
         MPI_Scatterv(a, counts, displacements, MPI_INT, &recv, counts[id], MPI_INT, masterProcess, MPI_COMM_WORLD);
 
+        /*
         cout << "process " << id << " received : "; 
         for (int k = 0; k < counts[id]; k++) {
             cout << recv[k] << " ";
         }
         cout << endl;
+        */
         
     }
     // other processes
     else {
         MPI_Scatterv(NULL, NULL, NULL, MPI_INT, &recv, counts[id], MPI_INT, masterProcess, MPI_COMM_WORLD);
+        /*
         cout << "process " << id << " received : "; 
         for (int k = 0; k < counts[id]; k++) {
             cout << recv[k] << " ";
         }
         cout << endl;
+        */
     }
     
 
@@ -138,8 +139,8 @@ int main( int argc, char* argv[] ) {
         MPI_Comm_size(rowComm, &rowSize);
         MPI_Comm_rank(rowComm, &rowId);
 
-        cout << "\nWorldRank/size is " << id <<"/" << numProcesses << ", Rowrank/size is " << rowId << "/" << rowSize << " in Group:"
-        << color << endl; 
+        // cout << "\nWorldRank/size is " << id <<"/" << numProcesses << ", Rowrank/size is " << rowId << "/" << rowSize << " in Group:"
+        // << color << endl; 
 
 
         // choose pivot, and the root process in group broadcast pivot
@@ -161,9 +162,11 @@ int main( int argc, char* argv[] ) {
 
 
         // partition array buffer[] into B1 and B2, such that B1 <= pivot < B2
+        /*
         cout << "buffer content is: ";
         print_array(buffer, len_buffer);
         cout << "len of buffer is " << len_buffer << endl;
+        */
         int startIndexB2 = partition(buffer, len_buffer, pivot);
         int* B1 = buffer;
         int* B2 = buffer + startIndexB2;
@@ -171,9 +174,11 @@ int main( int argc, char* argv[] ) {
         int len_B2 = len_buffer - startIndexB2; 
         cout << "lenB1: " << len_B1 << ", and len_B2 " << len_B2 << endl;
         
+        /*
         cout << "Process " << id << " after partition is: ";
         print_array(buffer, len_buffer);
         cout << "In rowId " << rowId << ", start index of B2 is " << startIndexB2 << endl;
+        */
 
 
         // find pair in group
@@ -182,18 +187,22 @@ int main( int argc, char* argv[] ) {
             pairId = rowId - rowSize / 2; 
             // cout << "rowId: " << rowId << " pairId:" << pairId << endl;
 
+            cout << "before send" << endl;
             // send B1 to pairId in group
             MPI_Send(&len_B1, 1, MPI_INT, pairId, 0, rowComm);  // send length of B1 with tag 0
             MPI_Send(B1, len_B1, MPI_INT, pairId, 1, rowComm);  // send B1 with tag 1
+            cout << "after send" << endl;
 
             // recv C from pairId
             int len_C;
             MPI_Recv(&len_C, 1, MPI_INT, pairId, 0, rowComm, &status);
             int C[len_C];
             MPI_Recv(C, len_C, MPI_INT, pairId, 1, rowComm, &status);
-            cout << "in rowId " << rowId << ", C = ";
-            print_array(C, len_C);
+            cout << "after receive" << endl;
+            // cout << "in rowId " << rowId << ", C = ";
+            // print_array(C, len_C);
 
+            cout << "before union" << endl;
             // union B2 and C
             int len_new_buffer = len_B2 + len_C;
             int * new_buffer = (int *) malloc(len_new_buffer * sizeof(int));
@@ -209,6 +218,7 @@ int main( int argc, char* argv[] ) {
             buffer = new_buffer;
             len_buffer = len_new_buffer;
             counts[id] = len_buffer;
+            cout << "after union" << endl;
             cout << "new buffer in pId/rowId " << id << "/" << rowId << " is:";
             print_array(buffer, len_buffer);
 
@@ -255,8 +265,8 @@ int main( int argc, char* argv[] ) {
 
     /**************** local quicksort in each process **************/
     qsort(buffer, len_buffer, sizeof(int), compare);
-    cout << "Final sorted buffer in pId " << id << " is:";
-    print_array(buffer, len_buffer);
+    // cout << "Final sorted buffer in pId " << id << " is:";
+    // print_array(buffer, len_buffer);
 
 
     /**************** Gather all elements in the order of process id, output the final sorted array **************/ 
@@ -270,15 +280,15 @@ int main( int argc, char* argv[] ) {
         for (int p = 1; p < numProcesses; p++) {
             MPI_Recv(&gather_counts[p], 1, MPI_INT, p, p, MPI_COMM_WORLD, &status);
         }
-        cout << "gather counts array is ";
-        print_array(gather_counts, numProcesses);
+        // cout << "gather counts array is ";
+        // print_array(gather_counts, numProcesses);
 
         gather_displacements[0] = 0;
         for (int d = 1; d < numProcesses; d++) {
             gather_displacements[d] = gather_displacements[d-1] + gather_counts[d-1];
         }
-        cout << "gather displacements array is ";
-        print_array(gather_displacements, numProcesses);
+        // cout << "gather displacements array is ";
+        // print_array(gather_displacements, numProcesses);
 
         // Receive buffern content
         int sorted_recv_array[N];
@@ -288,6 +298,9 @@ int main( int argc, char* argv[] ) {
         cout << "\n\nThe Final Sorted Array is ";
         print_array(sorted_recv_array, N);
 
+        double end_time = MPI_Wtime();
+        double execution_time = end_time - start_time;
+        cout << "Parallel quick sort time is: " << execution_time << endl;
     } 
     else {
         // send buffer length
@@ -299,7 +312,7 @@ int main( int argc, char* argv[] ) {
     }
 
     MPI_Finalize();
-    
+
     return 0;
 
 }
