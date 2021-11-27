@@ -239,7 +239,7 @@ void free_2d_double(double ** G, int rows, int cols) {
 // generate random graph represented by 2d array, if no edge, weight is infinity
 void generate_graph(double ** G, int num_of_vertices) {
     double INF = numeric_limits<double>::infinity(); 
-    srand(time(0)); 
+    // srand(time(0)); 
 
     for (int i = 0; i < num_of_vertices; i++) {
         G[i][i] = 0;
