@@ -240,9 +240,43 @@ int main(int argc, char* argv[]) {
 
     cout << "In process id " << id << ", final result array is: ";
     print_2d_array(block, bsz, bsz);
-
     free(kth_col);
     free(kth_row);
+
+    /**************************************************************************************/
+    // Gather all blocks into one whole matrix result
+    if (id == 0) {
+        double ** shortest_path_matrix = alloc_2d_double(N, N);
+
+        // root process receive result from other processes
+        for (int i = 0; i < d; i++) {
+            for (int j = 0; j < d; j++) {
+                double ** tmp_block = alloc_2d_double(bsz, bsz);
+
+                int source_pid = i * d + j;
+                if (source_pid == 0) {
+                    copy_2d_array(tmp_block, block, bsz); 
+                }
+                else {
+                    MPI_Recv(&tmp_block[0][0], bsz*bsz, MPI_DOUBLE, source_pid, source_pid, MPI_COMM_WORLD, &status);
+                }
+
+                // merge blocks into a whole graph matrix
+                for (int k = 0; k < bsz; k++) {
+                    for (int l = 0; l < bsz; l++) {
+                        shortest_path_matrix[k + i * bsz][l + j * bsz] = tmp_block[k][l];
+                    }
+                }
+                free_2d_double(tmp_block, bsz, bsz);
+            }
+        }
+        cout << "The final shortest path matrix is :";
+        print_2d_array(shortest_path_matrix, N, N);
+        free_2d_double(shortest_path_matrix, N, N);
+    } 
+    else {
+        MPI_Send(&block[0][0], bsz*bsz, MPI_DOUBLE, 0, id, MPI_COMM_WORLD);
+    }
 
     MPI_Comm_free(&rowComm);
     MPI_Comm_free(&colComm);
