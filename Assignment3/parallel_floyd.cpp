@@ -1,4 +1,6 @@
 #include <iostream>
+#include <stdio.h>
+#include <fstream>
 #include <iomanip>
 #include <limits>
 #include <stdlib.h>
@@ -9,7 +11,7 @@
 #include "mpi.h"
 
 // number of vertices
-#define N 6
+#define N 36
 
 using namespace std;
 
@@ -241,18 +243,26 @@ void generate_graph(double ** G, int num_of_vertices) {
     double INF = numeric_limits<double>::infinity(); 
     // srand(time(0)); 
 
-    for (int i = 0; i < num_of_vertices; i++) {
-        G[i][i] = 0;
-        for (int j = i+1; j < num_of_vertices; j++) {
-            G[i][j] = rand() % 5;
-            if ((G[i][j] - 0.0) < 1E-3) {
-                G[i][j] = INF;
-            }
+    ifstream file("demo_data/D0.txt");
+    string str;
+    int i = 0;
+    while (getline(file, str)) {
+        char * str_char_array = &str[0];
+        // cout << str_char_array << endl;
+        char * token = strtok(str_char_array, "  ");
+        int j = 0;
+        while (token != NULL) {
+            // double d = stod(token);
+            // printf("%s", token);
+            int d = atoi(token);
+            if (d == 0) G[i][j] = INF;
+            else G[i][j] = double(d);
+            if (i == j) G[i][j] = 0;
+            token = strtok(NULL, "  ");
+            j++;
         }
-        for (int j = 0; j < i; j++) {
-            G[i][j] = G[j][i];
-        }
-    } 
+        i++;
+    }
 }
 
 void copy_2d_array(double ** destination, double ** source, int num) {
